@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedagang Nusantara - Game Jarak vs Harga</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        @keyframes fly {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .plane-flying {
+            animation: fly 2s ease-in-out infinite;
+        }
+        
+        .island-pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-b from-blue-400 to-blue-600 min-h-full">
+    <div class="container mx-auto px-4 py-6 h-full">
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-white mb-2">🛩️ Pedagang Nusantara</h1>
+            <p class="text-blue-100">Jelajahi Indonesia dan pelajari perbedaan harga barang antar pulau!</p>
+        </div>
+
+        <!-- Game Stats -->
+        <div class="bg-white rounded-lg p-4 mb-6 shadow-lg">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600" id="money">Rp 100,000</div>
+                        <div class="text-sm text-gray-600">Modal</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600" id="profit">Rp 0</div>
+                        <div class="text-sm text-gray-600">Keuntungan</div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xl font-bold text-purple-600" id="level">Level 1</div>
+                    <div class="text-sm text-gray-600">Pedagang Pemula</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Area - Peta Indonesia -->
+        <div class="bg-gradient-to-b from-sky-300 to-blue-500 rounded-lg p-6 mb-6 relative overflow-hidden" style="height: 700px;">
+            <!-- Clouds -->
+            <div class="absolute top-4 left-10 text-white text-2xl opacity-70">☁️</div>
+            <div class="absolute top-8 right-20 text-white text-xl opacity-50">☁️</div>
+            <div class="absolute top-12 left-1/3 text-white text-lg opacity-60">☁️</div>
+            <div class="absolute top-16 right-40 text-white text-lg opacity-40">☁️</div>
+            <div class="absolute top-20 left-2/3 text-white text-lg opacity-50">☁️</div>
+
+            <!-- Sumatera -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="medan" onclick="selectIsland('medan')" style="top: 80px; left: 50px;">
+                <svg width="60" height="80" viewBox="0 0 60 80" class="drop-shadow-lg">
+                    <path d="M10 70 Q5 60 8 50 Q12 40 15 30 Q20 20 25 15 Q30 10 35 15 Q40 20 45 30 Q48 40 52 50 Q55 60 50 70 Z" fill="#32CD32" stroke="#228B22" stroke-width="3"/>
+                    <circle cx="20" cy="35" r="4" fill="#FFD700"/>
+                    <circle cx="35" cy="45" r="3" fill="#FFD700"/>
+                    <circle cx="40" cy="30" r="3" fill="#FFD700"/>
+                    <path d="M15 25 Q20 20 25 25 Q20 30 15 25" fill="#8B4513"/>
+                    <path d="M35 35 Q40 30 45 35 Q40 40 35 35" fill="#8B4513"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1 bg-black bg-opacity-50 rounded px-1">Medan</div>
+                <div class="text-center text-yellow-200 text-xs">Sumatera</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="padang" onclick="selectIsland('padang')" style="top: 180px; left: 40px;">
+                <svg width="50" height="70" viewBox="0 0 50 70" class="drop-shadow-lg">
+                    <path d="M8 60 Q3 50 6 40 Q10 30 13 20 Q18 10 23 8 Q28 6 33 8 Q38 10 43 20 Q46 30 44 40 Q47 50 42 60 Z" fill="#32CD32" stroke="#228B22" stroke-width="3"/>
+                    <circle cx="18" cy="30" r="3" fill="#FFD700"/>
+                    <circle cx="32" cy="35" r="3" fill="#FFD700"/>
+                    <path d="M15 25 Q18 22 21 25 Q18 28 15 25" fill="#8B4513"/>
+                    <path d="M29 30 Q32 27 35 30 Q32 33 29 30" fill="#8B4513"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1 bg-black bg-opacity-50 rounded px-1">Padang</div>
+                <div class="text-center text-yellow-200 text-xs">Sumatera</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="palembang" onclick="selectIsland('palembang')" style="top: 280px; left: 60px;">
+                <svg width="45" height="60" viewBox="0 0 45 60" class="drop-shadow-lg">
+                    <path d="M6 50 Q2 40 5 30 Q8 20 12 15 Q16 8 22 6 Q28 8 32 15 Q36 20 39 30 Q42 40 38 50 Z" fill="#32CD32" stroke="#228B22" stroke-width="3"/>
+                    <circle cx="15" cy="25" r="3" fill="#FFD700"/>
+                    <circle cx="28" cy="30" r="3" fill="#FFD700"/>
+                    <path d="M12 20 Q15 17 18 20 Q15 23 12 20" fill="#8B4513"/>
+                    <path d="M25 25 Q28 22 31 25 Q28 28 25 25" fill="#8B4513"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1 bg-black bg-opacity-50 rounded px-1">Palembang</div>
+                <div class="text-center text-yellow-200 text-xs">Sumatera</div>
+            </div>
+
+            <!-- Jawa -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform island-pulse" id="jakarta" onclick="selectIsland('jakarta')" style="top: 350px; left: 180px;">
+                <svg width="80" height="50" viewBox="0 0 80 50" class="drop-shadow-lg">
+                    <path d="M5 40 Q2 35 5 30 Q10 25 20 22 Q30 20 40 22 Q50 20 60 22 Q70 25 75 30 Q78 35 75 40 Q70 45 60 42 Q50 40 40 42 Q30 40 20 42 Q10 45 5 40 Z" fill="#32CD32" stroke="#228B22" stroke-width="3"/>
+                    <circle cx="25" cy="32" r="3" fill="#FFD700"/>
+                    <circle cx="40" cy="30" r="4" fill="#FFD700"/>
+                    <circle cx="55" cy="32" r="3" fill="#FFD700"/>
+                    <path d="M20 28 Q25 25 30 28 Q25 31 20 28" fill="#8B4513"/>
+                    <path d="M35 26 Q40 23 45 26 Q40 29 35 26" fill="#8B4513"/>
+                    <path d="M50 28 Q55 25 60 28 Q55 31 50 28" fill="#8B4513"/>
+                    <rect x="38" y="28" width="4" height="6" fill="#DC143C"/>
+                </svg>
+                <div class="text-center text-white font-bold text-sm mt-1 bg-black bg-opacity-50 rounded px-1">Jakarta</div>
+                <div class="text-center text-yellow-200 text-xs">Jawa</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="bandung" onclick="selectIsland('bandung')" style="top: 370px; left: 220px;">
+                <svg width="40" height="35" viewBox="0 0 40 35" class="drop-shadow-lg">
+                    <path d="M3 28 Q1 25 3 22 Q6 18 12 16 Q20 15 28 16 Q34 18 37 22 Q39 25 37 28 Q34 30 28 29 Q20 28 12 29 Q6 30 3 28 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="15" cy="22" r="1.5" fill="#90EE90"/>
+                    <circle cx="25" cy="21" r="1.5" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Bandung</div>
+                <div class="text-center text-yellow-200 text-xs">Jawa</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="yogyakarta" onclick="selectIsland('yogyakarta')" style="top: 380px; left: 280px;">
+                <svg width="45" height="35" viewBox="0 0 45 35" class="drop-shadow-lg">
+                    <path d="M4 28 Q2 25 4 22 Q7 18 14 16 Q22 15 30 16 Q37 18 40 22 Q42 25 40 28 Q37 30 30 29 Q22 28 14 29 Q7 30 4 28 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="16" cy="22" r="1.5" fill="#90EE90"/>
+                    <circle cx="28" cy="21" r="1.5" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Yogya</div>
+                <div class="text-center text-yellow-200 text-xs">Jawa</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="surabaya" onclick="selectIsland('surabaya')" style="top: 370px; left: 340px;">
+                <svg width="50" height="40" viewBox="0 0 50 40" class="drop-shadow-lg">
+                    <path d="M5 32 Q2 28 5 24 Q8 20 16 18 Q25 17 34 18 Q42 20 45 24 Q48 28 45 32 Q42 35 34 34 Q25 33 16 34 Q8 35 5 32 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="18" cy="25" r="2" fill="#90EE90"/>
+                    <circle cx="32" cy="24" r="2" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Surabaya</div>
+                <div class="text-center text-yellow-200 text-xs">Jawa</div>
+            </div>
+
+            <!-- Kalimantan -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="pontianak" onclick="selectIsland('pontianak')" style="top: 200px; left: 280px;">
+                <svg width="70" height="90" viewBox="0 0 70 90" class="drop-shadow-lg">
+                    <path d="M12 80 Q8 70 10 60 Q15 50 18 40 Q22 30 28 20 Q35 10 42 20 Q48 30 52 40 Q55 50 60 60 Q62 70 58 80 Q52 85 42 82 Q35 80 28 82 Q18 85 12 80 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="25" cy="45" r="3" fill="#90EE90"/>
+                    <circle cx="40" cy="35" r="2" fill="#90EE90"/>
+                    <circle cx="45" cy="55" r="2" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Pontianak</div>
+                <div class="text-center text-yellow-200 text-xs">Kalimantan</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="banjarmasin" onclick="selectIsland('banjarmasin')" style="top: 280px; left: 320px;">
+                <svg width="55" height="70" viewBox="0 0 55 70" class="drop-shadow-lg">
+                    <path d="M8 60 Q4 50 7 40 Q12 30 16 20 Q22 10 28 8 Q34 10 40 20 Q44 30 47 40 Q50 50 46 60 Q40 65 28 62 Q16 65 8 60 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="20" cy="35" r="2" fill="#90EE90"/>
+                    <circle cx="35" cy="30" r="2" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Banjarmasin</div>
+                <div class="text-center text-yellow-200 text-xs">Kalimantan</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="balikpapan" onclick="selectIsland('balikpapan')" style="top: 220px; left: 380px;">
+                <svg width="50" height="65" viewBox="0 0 50 65" class="drop-shadow-lg">
+                    <path d="M7 55 Q3 45 6 35 Q10 25 15 18 Q20 10 25 8 Q30 10 35 18 Q40 25 44 35 Q47 45 43 55 Q38 60 25 58 Q12 60 7 55 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="18" cy="30" r="2" fill="#90EE90"/>
+                    <circle cx="32" cy="35" r="2" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Balikpapan</div>
+                <div class="text-center text-yellow-200 text-xs">Kalimantan</div>
+            </div>
+
+            <!-- Bali & Nusa Tenggara -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="bali" onclick="selectIsland('bali')" style="top: 420px; left: 380px;">
+                <svg width="45" height="35" viewBox="0 0 45 35" class="drop-shadow-lg">
+                    <path d="M4 28 Q2 25 4 22 Q7 18 14 16 Q22 15 30 16 Q37 18 40 22 Q42 25 40 28 Q37 30 30 29 Q22 28 14 29 Q7 30 4 28 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="16" cy="22" r="1.5" fill="#90EE90"/>
+                    <circle cx="28" cy="21" r="1.5" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Bali</div>
+                <div class="text-center text-yellow-200 text-xs">Bali</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="lombok" onclick="selectIsland('lombok')" style="top: 430px; left: 420px;">
+                <svg width="35" height="30" viewBox="0 0 35 30" class="drop-shadow-lg">
+                    <path d="M3 24 Q1 21 3 18 Q6 14 12 12 Q17 11 23 12 Q29 14 32 18 Q34 21 32 24 Q29 26 23 25 Q17 24 12 25 Q6 26 3 24 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="12" cy="18" r="1" fill="#90EE90"/>
+                    <circle cx="23" cy="17" r="1" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Lombok</div>
+                <div class="text-center text-yellow-200 text-xs">NTB</div>
+            </div>
+
+            <!-- Sulawesi -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="makassar" onclick="selectIsland('makassar')" style="top: 350px; left: 450px;">
+                <svg width="60" height="80" viewBox="0 0 60 80" class="drop-shadow-lg">
+                    <path d="M15 70 Q10 60 12 50 Q8 45 15 40 Q20 35 25 30 Q30 25 35 30 Q40 35 45 40 Q52 45 48 50 Q50 60 45 70 Q40 75 30 72 Q20 75 15 70 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="22" cy="45" r="2" fill="#90EE90"/>
+                    <circle cx="38" cy="50" r="2" fill="#90EE90"/>
+                    <circle cx="30" cy="35" r="1.5" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Makassar</div>
+                <div class="text-center text-yellow-200 text-xs">Sulawesi</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="manado" onclick="selectIsland('manado')" style="top: 180px; left: 480px;">
+                <svg width="45" height="60" viewBox="0 0 45 60" class="drop-shadow-lg">
+                    <path d="M8 50 Q4 40 7 30 Q12 20 18 15 Q22 10 27 15 Q32 20 37 30 Q40 40 36 50 Q32 55 22 52 Q12 55 8 50 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="18" cy="30" r="2" fill="#90EE90"/>
+                    <circle cx="27" cy="35" r="1.5" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Manado</div>
+                <div class="text-center text-yellow-200 text-xs">Sulawesi</div>
+            </div>
+
+            <!-- Maluku -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="ambon" onclick="selectIsland('ambon')" style="top: 300px; left: 550px;">
+                <svg width="40" height="50" viewBox="0 0 40 50" class="drop-shadow-lg">
+                    <path d="M6 42 Q2 35 5 28 Q8 20 14 15 Q20 12 26 15 Q32 20 35 28 Q38 35 34 42 Q30 46 20 44 Q10 46 6 42 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="15" cy="28" r="1.5" fill="#90EE90"/>
+                    <circle cx="25" cy="25" r="1.5" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Ambon</div>
+                <div class="text-center text-yellow-200 text-xs">Maluku</div>
+            </div>
+
+            <!-- Papua -->
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="jayapura" onclick="selectIsland('jayapura')" style="top: 250px; left: 650px;">
+                <svg width="80" height="70" viewBox="0 0 80 70" class="drop-shadow-lg">
+                    <path d="M15 60 Q10 50 12 40 Q18 30 25 25 Q35 20 45 25 Q55 30 65 35 Q70 40 68 50 Q65 60 55 58 Q45 56 35 58 Q25 56 15 60 Z" fill="#32CD32" stroke="#228B22" stroke-width="3"/>
+                    <circle cx="28" cy="40" r="4" fill="#FFD700"/>
+                    <circle cx="45" cy="35" r="4" fill="#FFD700"/>
+                    <circle cx="55" cy="45" r="4" fill="#FFD700"/>
+                    <path d="M22 35 Q28 30 34 35 Q28 40 22 35" fill="#8B4513"/>
+                    <path d="M40 30 Q45 25 50 30 Q45 35 40 30" fill="#8B4513"/>
+                    <path d="M50 40 Q55 35 60 40 Q55 45 50 40" fill="#8B4513"/>
+                    <polygon points="42,32 46,28 50,32 46,36" fill="#B8860B"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1 bg-black bg-opacity-50 rounded px-1">Jayapura</div>
+                <div class="text-center text-yellow-200 text-xs">Papua</div>
+            </div>
+
+            <div class="absolute cursor-pointer transform hover:scale-110 transition-transform" id="sorong" onclick="selectIsland('sorong')" style="top: 320px; left: 600px;">
+                <svg width="55" height="50" viewBox="0 0 55 50" class="drop-shadow-lg">
+                    <path d="M8 42 Q4 35 7 28 Q12 20 20 16 Q27 14 35 16 Q43 20 48 28 Q51 35 47 42 Q43 46 35 44 Q27 46 20 44 Q12 46 8 42 Z" fill="#228B22" stroke="#006400" stroke-width="2"/>
+                    <circle cx="20" cy="30" r="2" fill="#90EE90"/>
+                    <circle cx="35" cy="28" r="2" fill="#90EE90"/>
+                </svg>
+                <div class="text-center text-white font-bold text-xs mt-1">Sorong</div>
+                <div class="text-center text-yellow-200 text-xs">Papua</div>
+            </div>
+
+            <!-- Plane -->
+            <div class="absolute plane-flying" id="plane" style="bottom: 280px; left: 200px; transition: all 3s ease-in-out;">
+                <div class="text-4xl">✈️</div>
+            </div>
+        </div>
+
+        <!-- Trading Panel -->
+        <div class="bg-white rounded-lg p-6 shadow-lg" id="tradingPanel" style="display: none;">
+            <h3 class="text-2xl font-bold mb-4 text-center" id="currentLocation">Selamat datang di Jakarta!</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Buy Section -->
+                <div class="border-2 border-green-200 rounded-lg p-4">
+                    <h4 class="text-lg font-bold text-green-700 mb-3">💰 Beli Barang</h4>
+                    <div id="buyItems" class="space-y-2">
+                        <!-- Items will be populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Sell Section -->
+                <div class="border-2 border-blue-200 rounded-lg p-4">
+                    <h4 class="text-lg font-bold text-blue-700 mb-3">💼 Jual Barang</h4>
+                    <div id="sellItems" class="space-y-2">
+                        <p class="text-gray-500 text-center py-4">Inventory kosong</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 text-center">
+                <button onclick="closeTrading()" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-bold">
+                    🛩️ Terbang ke Pulau Lain
+                </button>
+            </div>
+        </div>
+
+        <!-- Flight Cost Info -->
+        <div class="mt-6 bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+            <h4 class="font-bold text-blue-800 mb-3">✈️ Biaya Penerbangan dari Jakarta:</h4>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                <div class="text-blue-700"><strong>Bandung:</strong> Rp 15,000 (150km)</div>
+                <div class="text-blue-700"><strong>Yogyakarta:</strong> Rp 43,000 (430km)</div>
+                <div class="text-blue-700"><strong>Palembang:</strong> Rp 55,000 (550km)</div>
+                <div class="text-blue-700"><strong>Surabaya:</strong> Rp 66,000 (660km)</div>
+                <div class="text-blue-700"><strong>Pontianak:</strong> Rp 71,000 (710km)</div>
+                <div class="text-blue-700"><strong>Padang:</strong> Rp 90,000 (900km)</div>
+                <div class="text-blue-700"><strong>Bali:</strong> Rp 115,000 (1150km)</div>
+                <div class="text-blue-700"><strong>Balikpapan:</strong> Rp 120,000 (1200km)</div>
+                <div class="text-blue-700"><strong>Lombok:</strong> Rp 130,000 (1300km)</div>
+                <div class="text-blue-700"><strong>Makassar:</strong> Rp 135,000 (1350km)</div>
+                <div class="text-blue-700"><strong>Medan:</strong> Rp 142,000 (1420km)</div>
+                <div class="text-blue-700"><strong>Manado:</strong> Rp 185,000 (1850km)</div>
+                <div class="text-blue-700"><strong>Ambon:</strong> Rp 210,000 (2100km)</div>
+                <div class="text-blue-700"><strong>Sorong:</strong> Rp 320,000 (3200km)</div>
+                <div class="text-blue-700"><strong>Jayapura:</strong> Rp 340,000 (3400km)</div>
+            </div>
+        </div>
+
+        <!-- Info Panel -->
+        <div class="mt-4 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+            <h4 class="font-bold text-yellow-800 mb-2">💡 Tips Bermain:</h4>
+            <ul class="text-yellow-700 text-sm space-y-1">
+                <li>• Beli barang murah di satu pulau, jual mahal di pulau lain</li>
+                <li>• Semakin jauh jarak, semakin besar perbedaan harga dan biaya BBM</li>
+                <li>• Perhatikan biaya bahan bakar pesawat sebelum terbang</li>
+                <li>• Pulau jauh seperti Papua punya barang mahal tapi biaya BBM tinggi</li>
+                <li>• Kumpulkan keuntungan untuk naik level!</li>
+            </ul>
+        </div>
+
+        <!-- Creator Credit -->
+        <div class="mt-6 text-center">
+            <p class="text-white text-sm bg-blue-600 bg-opacity-70 rounded-lg py-2 px-4 inline-block">
+                📚 Dibuat oleh <strong>Kelvin, S.Pd.</strong>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            money: 100000,
+            profit: 0,
+            level: 1,
+            currentIsland: null,
+            inventory: {},
+            visitedIslands: new Set()
+        };
+
+        const islands = {
+            // Sumatera
+            medan: {
+                name: 'Medan',
+                region: 'Sumatera Utara',
+                distance: 1420,
+                fuelCost: 142000,
+                items: {
+                    'Kelapa Sawit': { buy: 8000, sell: 15000 },
+                    'Karet': { buy: 12000, sell: 20000 },
+                    'Beras': { buy: 14000, sell: 12000 },
+                    'Elektronik': { buy: 550000, sell: 500000 }
+                }
+            },
+            padang: {
+                name: 'Padang',
+                region: 'Sumatera Barat',
+                distance: 900,
+                fuelCost: 90000,
+                items: {
+                    'Rendang Instan': { buy: 25000, sell: 45000 },
+                    'Keripik Balado': { buy: 15000, sell: 30000 },
+                    'Beras': { buy: 13000, sell: 12000 },
+                    'Kopi': { buy: 30000, sell: 50000 }
+                }
+            },
+            palembang: {
+                name: 'Palembang',
+                region: 'Sumatera Selatan',
+                distance: 550,
+                fuelCost: 55000,
+                items: {
+                    'Pempek': { buy: 20000, sell: 35000 },
+                    'Minyak Bumi': { buy: 8000, sell: 12000 },
+                    'Beras': { buy: 12500, sell: 12000 },
+                    'Karet': { buy: 10000, sell: 18000 }
+                }
+            },
+            
+            // Jawa (Pusat - Jakarta)
+            jakarta: {
+                name: 'Jakarta',
+                region: 'DKI Jakarta',
+                distance: 0,
+                fuelCost: 0,
+                items: {
+                    'Beras': { buy: 12000, sell: 15000 },
+                    'Gula': { buy: 14000, sell: 18000 },
+                    'Minyak Goreng': { buy: 16000, sell: 20000 },
+                    'Elektronik': { buy: 500000, sell: 600000 }
+                }
+            },
+            bandung: {
+                name: 'Bandung',
+                region: 'Jawa Barat',
+                distance: 150,
+                fuelCost: 15000,
+                items: {
+                    'Tekstil': { buy: 35000, sell: 55000 },
+                    'Tahu Sumedang': { buy: 8000, sell: 15000 },
+                    'Beras': { buy: 11500, sell: 12000 },
+                    'Kerajinan': { buy: 25000, sell: 40000 }
+                }
+            },
+            yogyakarta: {
+                name: 'Yogyakarta',
+                region: 'DI Yogyakarta',
+                distance: 430,
+                fuelCost: 43000,
+                items: {
+                    'Batik': { buy: 75000, sell: 120000 },
+                    'Gudeg Kaleng': { buy: 18000, sell: 30000 },
+                    'Kerajinan Perak': { buy: 150000, sell: 250000 },
+                    'Beras': { buy: 11000, sell: 12000 }
+                }
+            },
+            surabaya: {
+                name: 'Surabaya',
+                region: 'Jawa Timur',
+                distance: 660,
+                fuelCost: 66000,
+                items: {
+                    'Petis': { buy: 12000, sell: 20000 },
+                    'Kerupuk': { buy: 15000, sell: 25000 },
+                    'Beras': { buy: 10500, sell: 12000 },
+                    'Garam': { buy: 5000, sell: 8000 }
+                }
+            },
+
+            // Kalimantan
+            pontianak: {
+                name: 'Pontianak',
+                region: 'Kalimantan Barat',
+                distance: 710,
+                fuelCost: 71000,
+                items: {
+                    'Kayu': { buy: 200000, sell: 350000 },
+                    'Rotan': { buy: 45000, sell: 75000 },
+                    'Beras': { buy: 15000, sell: 12000 },
+                    'Emas': { buy: 750000, sell: 900000 }
+                }
+            },
+            banjarmasin: {
+                name: 'Banjarmasin',
+                region: 'Kalimantan Selatan',
+                distance: 950,
+                fuelCost: 95000,
+                items: {
+                    'Batubara': { buy: 150000, sell: 200000 },
+                    'Intan': { buy: 2000000, sell: 2500000 },
+                    'Beras': { buy: 16000, sell: 12000 },
+                    'Ikan Haruan': { buy: 25000, sell: 40000 }
+                }
+            },
+            balikpapan: {
+                name: 'Balikpapan',
+                region: 'Kalimantan Timur',
+                distance: 1200,
+                fuelCost: 120000,
+                items: {
+                    'Minyak Bumi': { buy: 10000, sell: 15000 },
+                    'Gas Alam': { buy: 8000, sell: 12000 },
+                    'Beras': { buy: 17000, sell: 12000 },
+                    'Elektronik': { buy: 580000, sell: 500000 }
+                }
+            },
+
+            // Bali & Nusa Tenggara
+            bali: {
+                name: 'Bali',
+                region: 'Bali',
+                distance: 1150,
+                fuelCost: 115000,
+                items: {
+                    'Kerajinan': { buy: 50000, sell: 100000 },
+                    'Kopi Luwak': { buy: 200000, sell: 350000 },
+                    'Beras': { buy: 15000, sell: 12000 },
+                    'Pakaian Tradisional': { buy: 80000, sell: 150000 }
+                }
+            },
+            lombok: {
+                name: 'Lombok',
+                region: 'Nusa Tenggara Barat',
+                distance: 1300,
+                fuelCost: 130000,
+                items: {
+                    'Mutiara': { buy: 500000, sell: 800000 },
+                    'Kerajinan Sasak': { buy: 35000, sell: 65000 },
+                    'Beras': { buy: 16000, sell: 12000 },
+                    'Rumput Laut': { buy: 18000, sell: 30000 }
+                }
+            },
+
+            // Sulawesi
+            makassar: {
+                name: 'Makassar',
+                region: 'Sulawesi Selatan',
+                distance: 1350,
+                fuelCost: 135000,
+                items: {
+                    'Ikan Kering': { buy: 30000, sell: 50000 },
+                    'Rumput Laut': { buy: 20000, sell: 35000 },
+                    'Beras': { buy: 16000, sell: 12000 },
+                    'Nikel': { buy: 180000, sell: 250000 }
+                }
+            },
+            manado: {
+                name: 'Manado',
+                region: 'Sulawesi Utara',
+                distance: 1850,
+                fuelCost: 185000,
+                items: {
+                    'Ikan Cakalang': { buy: 35000, sell: 55000 },
+                    'Kelapa': { buy: 8000, sell: 15000 },
+                    'Beras': { buy: 18000, sell: 12000 },
+                    'Pala': { buy: 120000, sell: 200000 }
+                }
+            },
+
+            // Maluku
+            ambon: {
+                name: 'Ambon',
+                region: 'Maluku',
+                distance: 2100,
+                fuelCost: 210000,
+                items: {
+                    'Cengkeh': { buy: 150000, sell: 250000 },
+                    'Pala': { buy: 180000, sell: 300000 },
+                    'Beras': { buy: 20000, sell: 12000 },
+                    'Ikan Tuna': { buy: 45000, sell: 75000 }
+                }
+            },
+
+            // Papua
+            jayapura: {
+                name: 'Jayapura',
+                region: 'Papua',
+                distance: 3400,
+                fuelCost: 340000,
+                items: {
+                    'Emas': { buy: 800000, sell: 1100000 },
+                    'Sagu': { buy: 15000, sell: 35000 },
+                    'Beras': { buy: 25000, sell: 12000 },
+                    'Tembaga': { buy: 250000, sell: 400000 }
+                }
+            },
+            sorong: {
+                name: 'Sorong',
+                region: 'Papua Barat',
+                distance: 3200,
+                fuelCost: 320000,
+                items: {
+                    'Gas Alam': { buy: 12000, sell: 20000 },
+                    'Ikan Laut': { buy: 40000, sell: 70000 },
+                    'Beras': { buy: 24000, sell: 12000 },
+                    'Minyak Bumi': { buy: 15000, sell: 25000 }
+                }
+            }
+        };
+
+        function updateDisplay() {
+            document.getElementById('money').textContent = `Rp ${gameState.money.toLocaleString('id-ID')}`;
+            document.getElementById('profit').textContent = `Rp ${gameState.profit.toLocaleString('id-ID')}`;
+            
+            if (gameState.profit >= 500000 && gameState.level === 1) {
+                gameState.level = 2;
+                document.getElementById('level').textContent = 'Level 2';
+                showNotification('🎉 Naik Level! Anda sekarang Pedagang Berpengalaman!');
+            } else if (gameState.profit >= 1000000 && gameState.level === 2) {
+                gameState.level = 3;
+                document.getElementById('level').textContent = 'Level 3';
+                showNotification('🏆 Naik Level! Anda sekarang Pedagang Master!');
+            }
+        }
+
+        function selectIsland(islandId) {
+            const island = islands[islandId];
+            
+            // Check if enough money for fuel
+            if (island.fuelCost > 0 && gameState.money < island.fuelCost) {
+                showNotification(`❌ Uang tidak cukup! Biaya penerbangan ke ${island.name}: Rp ${island.fuelCost.toLocaleString('id-ID')}`);
+                return;
+            }
+            
+            gameState.currentIsland = islandId;
+            
+            // Animate plane movement
+            const plane = document.getElementById('plane');
+            const targetIsland = document.getElementById(islandId);
+            const rect = targetIsland.getBoundingClientRect();
+            const gameArea = targetIsland.parentElement.getBoundingClientRect();
+            
+            plane.style.left = (rect.left - gameArea.left - 20) + 'px';
+            plane.style.bottom = (gameArea.bottom - rect.bottom + 60) + 'px';
+
+            // Deduct fuel cost
+            if (island.fuelCost > 0) {
+                gameState.money -= island.fuelCost;
+                showNotification(`✈️ Terbang ke ${island.name} (${island.distance} km) - Biaya BBM: Rp ${island.fuelCost.toLocaleString('id-ID')}`);
+            } else {
+                showNotification(`🏠 Anda sudah di ${island.name} - Tidak ada biaya penerbangan`);
+            }
+
+            setTimeout(() => {
+                showTradingPanel(island);
+                gameState.visitedIslands.add(islandId);
+                updateDisplay();
+            }, 2000);
+        }
+
+        function showTradingPanel(island) {
+            document.getElementById('currentLocation').textContent = `Selamat datang di ${island.name}!`;
+            document.getElementById('tradingPanel').style.display = 'block';
+            document.getElementById('tradingPanel').classList.add('fade-in');
+
+            // Populate buy items
+            const buyItems = document.getElementById('buyItems');
+            buyItems.innerHTML = '';
+            
+            Object.entries(island.items).forEach(([item, prices]) => {
+                const canAfford = gameState.money >= prices.buy;
+                buyItems.innerHTML += `
+                    <div class="flex justify-between items-center p-2 border rounded ${canAfford ? 'hover:bg-green-50' : 'opacity-50'}">
+                        <span class="font-medium">${item}</span>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-green-600 font-bold">Rp ${prices.buy.toLocaleString('id-ID')}</span>
+                            <button onclick="buyItem('${item}', ${prices.buy})" 
+                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm font-bold ${!canAfford ? 'cursor-not-allowed opacity-50' : ''}"
+                                    ${!canAfford ? 'disabled' : ''}>
+                                Beli
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Populate sell items
+            const sellItems = document.getElementById('sellItems');
+            sellItems.innerHTML = '';
+            
+            if (Object.keys(gameState.inventory).length === 0) {
+                sellItems.innerHTML = '<p class="text-gray-500 text-center py-4">Inventory kosong</p>';
+            } else {
+                Object.entries(gameState.inventory).forEach(([item, quantity]) => {
+                    if (quantity > 0) {
+                        const sellPrice = island.items[item]?.sell || 0;
+                        sellItems.innerHTML += `
+                            <div class="flex justify-between items-center p-2 border rounded hover:bg-blue-50">
+                                <span class="font-medium">${item} (${quantity})</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-blue-600 font-bold">Rp ${sellPrice.toLocaleString('id-ID')}</span>
+                                    <button onclick="sellItem('${item}', ${sellPrice})" 
+                                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm font-bold">
+                                        Jual
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+        }
+
+        function buyItem(item, price) {
+            if (gameState.money >= price) {
+                gameState.money -= price;
+                gameState.inventory[item] = (gameState.inventory[item] || 0) + 1;
+                showNotification(`✅ Membeli ${item} seharga Rp ${price.toLocaleString('id-ID')}`);
+                updateDisplay();
+                showTradingPanel(islands[gameState.currentIsland]);
+            }
+        }
+
+        function sellItem(item, price) {
+            if (gameState.inventory[item] > 0) {
+                gameState.money += price;
+                gameState.inventory[item]--;
+                
+                // Calculate profit (assuming average buy price)
+                const avgBuyPrice = Object.values(islands).reduce((sum, island) => {
+                    return sum + (island.items[item]?.buy || 0);
+                }, 0) / Object.keys(islands).length;
+                
+                const itemProfit = price - avgBuyPrice;
+                if (itemProfit > 0) {
+                    gameState.profit += itemProfit;
+                }
+                
+                showNotification(`💰 Menjual ${item} seharga Rp ${price.toLocaleString('id-ID')}`);
+                updateDisplay();
+                showTradingPanel(islands[gameState.currentIsland]);
+            }
+        }
+
+        function closeTrading() {
+            document.getElementById('tradingPanel').style.display = 'none';
+            
+            // Reset island pulses
+            Object.keys(islands).forEach(islandId => {
+                const island = document.getElementById(islandId);
+                island.classList.remove('island-pulse');
+                if (!gameState.visitedIslands.has(islandId)) {
+                    island.classList.add('island-pulse');
+                }
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed top-4 right-4 bg-white border-l-4 border-blue-500 p-4 rounded shadow-lg z-50 fade-in';
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-800">${message}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-gray-400 hover:text-gray-600">✕</button>
+                </div>
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 4000);
+        }
+
+        // Initialize game
+        updateDisplay();
+        
+        // Make Jakarta pulse initially
+        document.getElementById('jakarta').classList.add('island-pulse');
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98ec6d28c1429af4',t:'MTc2MDUwMTAwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
